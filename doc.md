@@ -62,5 +62,57 @@ Mục đích chính là khi container bị xóa , không bị mất data
 -  docker run -it --name c1 -v D:\DOCKER\DataShared\HostAndContainer:/home/data ubuntu
 - docker run -it --name c2 --volumes-from c1 ubuntu
 
+# Thiết lập volumes(ổ đĩa) để chia sẻ lưu trữ và chia sẻ data
+
+> Danh sách ổ đĩa
+- docker volume ls
+> Thêm ổ đĩa
+- docker volume create ten-volume
+> Xóa ổ đĩa
+- docker volume rm ten-volume
+> Tạo container C1 liên kết với ổ đĩa Disk1 .. trỏ data vào thư mục /home/data trong C1
+- docker run -it --name C1 --mount source=Disk1,target=/home/disk1 nameImage
+
+# Tạo ổ đĩa ánh xạ từ 1 thư mục cụ thể trên máy HOST
+- docker volume create --opt device=pathHost --opt type=none --opt o=bind diskName
+- device -> Nơi lưu trữ trên máy HOST
+- λ docker volume create --opt device=D:\DOCKER\DiskShare --opt type=none --opt o=bind disk_share_between_container
+> Kiểm tra thông tin của ổ đĩa
+- docker volume inspect volumeName
+> kết nối với container qua option v
+- docker run -it -v diskName:pathInContainer --name nameContainer nameImage
+> Áp dụng nhỏ xíu trong cv hiện tại 
+- là có thể mount 1 thư mục và tìm kiếm bằng terminal
+
+
+
+
+# NETWORK
+> liệt kê tất cả network
+- docker network ls
+> Thông tin network
+- docker network inspect networkName
+> Tạo một network mới
+- docker network create --driver bridge networkName
+> Gán network cho 1 container dang chạy
+- docker network connect networkName containerName
+> Nếu như 2 container cùng 1 network thì có thê ping qua tên
+- ping containerName
+
+
+# Một số thao táo quan trọng
+> Tạo container ánh xạ cổng(port) theo máy HOST
+- docker run -it --name tenContainer -p postHost:portContainer tenImage
+- Trong đó portContainer hầu như ít được thay đổi, nó đi theo một số giá trị nhất định 
+- ví dụ như httpd : 80 ...
+### Ví dụ cụ thể
+> To container tên là b2, dùng image busybox, ánh xạ qua cổng 8888 của máy host (httpd dung cong 80 tren b2)
+- docker run -it --name b2 -p 8888:80 busybox
+- tao file index.html trong thu muc /var/www/
+- Ngoài máy Host chạy http://12.0.0.1:8888
+
+
+
+# Bai Tap vi du
 
 
