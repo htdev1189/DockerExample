@@ -48,6 +48,8 @@
 - docker exec -it id/ten-container bash
 > Tạo ra một Images từ container
 - docker commit id/ten-container ten-image-moi
+> Khoi dong lai container
+- docker restart containerName
 
 
 # Chia sẻ dữ liệu từ máy Host tới container
@@ -114,5 +116,53 @@ Mục đích chính là khi container bị xóa , không bị mất data
 
 
 # Bai Tap vi du
+
+## Tạo container ten la c-php , sử dụng image php 7.3fpm, sử dụng thư mục myCode lam nơi chia sẻ data
+- docker pull php:7.3-fpm
+- docker run -d --name c-php -v myCode:/home/myCode php:7.3-fpm
+
+## Tạo container tên là c-httpd, sử dụng images httpd mới nhất
+- docker pull httpd
+- copy file httpd.conf ra truoc (cd tới thư mục myCode trong máy host)
+- > docker run --rm httpd cat /usr/local/apache2/conf/httpd.conf > my-httpd.conf
+- mở file mới tải về được, active mod_proxy, mod_proxy_fcgi
+> Tạo handle doc file php bang container c-php port 9000
+- AddHandler "proxy:fcgi://c-php:9000" .php
+
+> Bắt đầu việc tạo contaier c-httpd (-d -> chạy nền)
+- docker run -d --name c-httpd --network www-net -p 9999:80 -p 443:443 -v D:\DOCKER\myCode:/home/myCode -v D:\DOCKER\myCode\my-httpd.conf:/usr/local/apache2/conf/httpd.conf httpd
+> truy cập 127.0.0.1:9999 để hiển thị kết quả
+
+
+## Tạo container c-mysql
+
+> truyến biến lên bằng -e 
+- docker run --rm -e var1="abc" blabla
+> Khởi tạo images
+- docker pull mysql
+> Thông tin cần thiết trong mysql
+- > file config : /etc/mysql/my.cnf
+- > port : 3304
+- > root : MYSQL_ROOT_PASSWORD
+- > Đường dẫn lưu database /var/lib/mysql
+
+> tải file my.cnf về máy host
+- docker run --rm -v D:\DOCKER\myCode:/home/mycode mysql cat /etc/mysql/my.cnf > my-sql.cnf
+> cho dòng này vào cuối file mới tải về 
+- default-authentication-plugin=mysql_native_password
+> tạo thư mục DB trong myCode để lưu trữ database
+> Khoi tao container
+- docker run -e MYSQL_ROOT_PASSWORD=abc123 -v D:\DOCKER\myCode\my-sql.cnf:/etc/mysql/my.cnf -v D:\DOCKER\myCode\DB:/var/lib/mysql --name c-mysql --network www-net mysql
+
+
+
+# Một số query mysql cơ bản
+> tạo user
+- mysql> CREATE USER 'root'@'%' IDENTIFIED BY 'PASSWORD';
+> thiết lập quyền hạn (có thể nhìn thấy tất cả các table)
+- mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+- mysql> FLUSH PRIVILEGES;
+> Thiet lap them extension cho docker
+- docker-php-ext-install mysqli
 
 
